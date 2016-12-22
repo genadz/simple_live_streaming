@@ -22,7 +22,6 @@
   }
   "songs": [
     {
-      "id": id,
       "name": name,
       "author": author,
       "likes": 1,
@@ -31,9 +30,9 @@
       "format": mp3,
       "links": {
         "self": /songs/id,
-        "download": /songs/storage/id
-        "upload": /songs/storage/id
-        "like": /songs/like/id
+        "download": /audiofiles/id
+        "upload": /audiofiles/id
+        "like": /songs/id/like
         }
     },
     {
@@ -79,7 +78,6 @@
 пример ответа:
 ```
 {
-  "id": id,
   "name": name,
   "author": author,
   "likes": 1,
@@ -88,10 +86,10 @@
   "format": mp3,
   "links": {
     "self": /songs/id,
-    "download": /songs/storage/id
-    "upload": /songs/storage/id
-    "like": /songs/like/id
-  }
+    "download": /audiofiles/id
+    "upload": /audiofiles/id
+    "like": /songs/id/like
+    }
 }
 ```
 
@@ -111,7 +109,6 @@
 в ответе получаем описание песни в формате json, в поле "upload" будет лежать урл, по которому можно загрузить саму песню (в формате mp3, flac,...)
 ```
 {
-  "id": id,
   "name": name,
   "author": author,
   "duration": 200,
@@ -119,9 +116,9 @@
   "format": flac
   "links": {
     "self": /songs/id,
-    "download": /songs/storage/id
-    "upload": /songs/storage/id
-    "like": /songs/like/id
+    "download": /audiofiles/id
+    "upload": /audiofiles/id
+    "like": /songs/id/like
   }
 }
 ```
@@ -137,11 +134,11 @@
 
 в ответе возвращается описание песни в формате json
 
-## PUT /songs/storage/{id}
+## PUT /audiofiles/{id}
 загрузить аудиофайл, в теле запроса содержится файл в формате "format" . Ответ пустой
 
-## GET /songs/storage/{id}
-скачать аудиофайл, тело запроса пустое. Ответ пустой
+## GET /audiofiles/{id}
+скачать аудиофайл, тело запроса пустое; в ответе получаем аудиофайл
 
-## POST /songs/like/{id}
+## POST /songs/{id}/like
 поставить лайк песне. тело запроса и ответ пустые
