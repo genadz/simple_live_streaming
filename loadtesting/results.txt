@@ -6,3 +6,12 @@ https://overload.yandex.net/5645#tab=test_data&tags=&plot_groups=main&machines=8
 
 # const(800, 5m), 1 instance of database
 https://overload.yandex.net/5646#tab=test_data&tags=&plot_groups=tables&machines=&metrics=&slider_start=1482995352&slider_end=1482995650&compress_ratio=1
+
+# line(1, 2000, 5m), replica set on localhost (3 inst)
+https://overload.yandex.net/5669#tab=test_data&tags=&plot_groups=main&machines=&metrics=&slider_start=1483006072&slider_end=1483006372
+
+# const(500, 5m), replica set on localhost (3 inst)
+https://overload.yandex.net/5672#tab=test_data&tags=&plot_groups=main&machines=8&metrics=&slider_start=1483008085&slider_end=1483008355&compress_ratio=1
+
+# const (450, 5m), replica set on localhost (3 inst)
+https://overload.yandex.net/5673#tab=test_data&tags=&plot_groups=main&machines=&metrics=&slider_start=1483008641&slider_end=1483008940
