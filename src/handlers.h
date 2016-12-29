@@ -5,8 +5,8 @@
 
 struct IHandler {
     virtual void operator()(fastcgi::Request *request) const = 0;
-    std::string getUid(fastcgi::Request* request) const {
-        return request->hasArg("uid") ? request->getArg("uid") : "";
+    std::string getUserId(fastcgi::Request* request) const {
+        return request->hasHeader("UserId") ? request->getHeader("UserId") : "";
     }
 };
 

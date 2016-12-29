@@ -1,5 +1,6 @@
 #include "handlers.h"
 #include "connection.h"
+#include "last_modify_time.h"
 
 #include <bsoncxx/json.hpp>
 #include <fastcgi2/data_buffer.h>
@@ -14,6 +15,8 @@ using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
 
 using ui32 = std::uint32_t;
+
+const std::chrono::seconds TimeDurationAfterModify{5};
 
 const std::string SONGS_DBNAME = "test";
 const std::string SONGS_COLLECTION_NAME = "songs";
@@ -35,6 +38,20 @@ inline ui32 getLimit(fastcgi::Request* request, ui32 defaultValue = 10) {
     return limitStr.empty() ? defaultValue : atoi(limitStr.c_str());
 }
 
+inline void setReadMode(mongocxx::client& client, const std::string& userId) {
+    if (!userId.empty()) {
+        auto lastModifyTime = LastModifyMap::getTime(userId);
+        if (lastModifyTime + TimeDurationAfterModify > std::chrono::system_clock::now()) {
+            mongocxx::read_preference rp{mongocxx::read_preference::read_mode::k_primary};
+            client.read_preference(rp);
+            std::cout << "read mode: primary" << std::endl;
+            return;
+        }
+    }
+    mongocxx::read_preference rp{mongocxx::read_preference::read_mode::k_primary_preferred};
+    client.read_preference(rp);
+}
+
 // GET /songs
 
 void GetSongs::putLinks(fastcgi::RequestStream& stream) const {
@@ -47,7 +64,10 @@ void GetSongs::putLinks(fastcgi::RequestStream& stream) const {
 void GetSongs::operator()(fastcgi::Request* request) const {
     auto limit = getLimit(request);
 
+    auto userId = getUserId(request);
     auto& conn = Connection::get();
+
+    setReadMode(conn, userId);
 
     auto songsCollection = conn[SONGS_DBNAME][SONGS_COLLECTION_NAME];
 
@@ -79,7 +99,11 @@ std::string GetOneSong::getId(fastcgi::Request* request) const {
 void GetOneSong::operator()(fastcgi::Request* request) const {
     auto songUri = getId(request);
 
+    auto userId = getUserId(request);
     auto& conn = Connection::get();
+
+    setReadMode(conn, userId);
+
     auto songsCollection = conn[SONGS_DBNAME][SONGS_COLLECTION_NAME];
 
     auto query = document{} << "song_uri" << songUri << finalize;
@@ -105,7 +129,10 @@ void GetNewSongs::putLinks(fastcgi::RequestStream& stream) const {
 void GetNewSongs::operator()(fastcgi::Request* request) const {
     auto limit = getLimit(request);
 
+    auto userId = getUserId(request);
     auto& conn = Connection::get();
+
+    setReadMode(conn, userId);
 
     auto songsCollection = conn[SONGS_DBNAME][SONGS_COLLECTION_NAME];
 
@@ -137,7 +164,10 @@ void GetBestSongs::putLinks(fastcgi::RequestStream& stream) const {
 void GetBestSongs::operator()(fastcgi::Request* request) const {
     auto limit = getLimit(request);
 
+    auto userId = getUserId(request);
     auto& conn = Connection::get();
+
+    setReadMode(conn, userId);
 
     auto songsCollection = conn[SONGS_DBNAME][SONGS_COLLECTION_NAME];
 
@@ -194,6 +224,8 @@ void AddSong::operator()(fastcgi::Request* request) const {
                 << "href" << (std::string("/songs/") + songUri + "/like") << close_document
         << close_document << finalize;
 
+    auto userId = getUserId(request);
+
     auto& conn = Connection::get();
     auto songsCollection = conn[SONGS_DBNAME][SONGS_COLLECTION_NAME];
 
@@ -208,6 +240,8 @@ void AddSong::operator()(fastcgi::Request* request) const {
     stream << bsoncxx::to_json(docValue.view()) << "\n";
       
     request->setStatus(200);
+
+    LastModifyMap::mark(userId);
 }
 
 

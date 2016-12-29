@@ -31,7 +31,6 @@ public:
         : fastcgi::Component(context)
     {
         mongocxx::instance inst{};
-        Connection::setPort(27017);
 
         getHandlers["/songs"] = GetSongs{};
         getHandlers["/songs/new"] = GetNewSongs{};
