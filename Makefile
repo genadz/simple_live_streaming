@@ -1,5 +1,5 @@
 CC = c++
-CFLAGS = -std=c++1y -Wall -fPIC -pthread
+CFLAGS = -std=c++1y -O2 -Wall -fPIC -pthread
 SOURCES = $(shell find ./src -name '*.cpp')
 DEPS = $(shell pkg-config --cflags --libs libmongocxx)
 

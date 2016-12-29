@@ -6,8 +6,20 @@
 #include <mongocxx/instance.hpp>
 
 #include <iostream>
+#include <boost/algorithm/string/predicate.hpp>
+
 #include "connection.h"
 #include "handlers.h"
+
+inline std::string mapUrl(const std::string& toMap) {
+    if (boost::starts_with(toMap, "/songs/") && (toMap != "/songs/new") && (toMap != "/songs/best")) {
+        if (boost::ends_with(toMap, "/like")) {
+            return "/songs/{id}/like";
+        }
+        return "/songs/{id}";
+    }
+    return toMap;
+}
 
 class HelloFastCGI : virtual public fastcgi::Component, virtual public fastcgi::Handler {
 
@@ -21,7 +33,13 @@ public:
         mongocxx::instance inst{};
         Connection::setPort(27017);
 
-        handlers["/songs"] = GetSongs{};
+        getHandlers["/songs"] = GetSongs{};
+        getHandlers["/songs/new"] = GetNewSongs{};
+        getHandlers["/songs/best"] = GetBestSongs{};
+        getHandlers["/songs/{id}"] = GetOneSong{};
+
+        postHandlers["/songs"] = AddSong{};
+        postHandlers["/songs/{id}/like"] = LikeSong{};
     }
     virtual ~HelloFastCGI() {}
 
@@ -30,17 +48,32 @@ public:
     virtual void onUnload() {}
 
     virtual void handleRequest(fastcgi::Request *request, fastcgi::HandlerContext *context) {
-        std::cout << request->getScriptName() << std::endl;
-        auto it = handlers.find(request->getScriptName());
-        if (it != handlers.end()) {
-            it->second(request);
+        //std::cout << request->getRequestMethod() << " " << request->getScriptName() << std::endl;
+        const std::string method = request->getRequestMethod();
+        if (method == "GET") {
+            handleOne(request, getHandlers);
+        } else if (method == "POST") {
+            handleOne(request, postHandlers);
         } else {
-            request->setStatus(404);
+            //not supported
+            request->setStatus(405);
         }
     }
 
 private:
-    HandlersMap handlers;
+    void handleOne(fastcgi::Request *request, HandlersMap& handlers) {
+        auto mapped = mapUrl(request->getScriptName());
+        auto it = handlers.find(mapped);
+        if (it != handlers.end()) {
+            it->second(request);
+        } else {
+            //not found
+            request->setStatus(404);
+        }
+    }
+
+    HandlersMap getHandlers;
+    HandlersMap postHandlers;
 };
 
 FCGIDAEMON_REGISTER_FACTORIES_BEGIN()

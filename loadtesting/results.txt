@@ -1,0 +1,8 @@
+# line(1, 3000, 5m), 1 instance of database
+https://overload.yandex.net/5643#tab=test_data&tags=&plot_groups=main&machines=8&metrics=&compress_ratio=1&slider_start=1482993780&slider_end=1482994055
+
+# const(1000, 5m), 1 instance of database
+https://overload.yandex.net/5645#tab=test_data&tags=&plot_groups=main&machines=8&metrics=&slider_start=1482994880&slider_end=1482995155&compress_ratio=1
+
+# const(800, 5m), 1 instance of database
+https://overload.yandex.net/5646#tab=test_data&tags=&plot_groups=tables&machines=&metrics=&slider_start=1482995352&slider_end=1482995650&compress_ratio=1
